@@ -61,7 +61,7 @@ services:
       - fromGroup: airflow-common
 
   # One-off job to init DB and create admin user; runs on each deploy
-  - type: job
+  - type: cron
     name: airflow-init
     env: docker
     dockerfilePath: ./Dockerfile
