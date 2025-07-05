@@ -27,47 +27,38 @@ services:
   # Web UI
   - type: web
     name: airflow-webserver
-    env: docker
+    runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    startCommand: airflow webserver
     envVars:
       - fromGroup: airflow-common
     domains:
       - airflow.onrender.com
-    disk:
-      name: airflow-logs
-      mountPath: /opt/airflow/logs
-      sizeGB: 1
 
   # Scheduler worker
   - type: worker
     name: airflow-scheduler
-    env: docker
+    runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    startCommand: airflow scheduler
     envVars:
       - fromGroup: airflow-common
 
   # Triggerer worker
   - type: worker
     name: airflow-triggerer
-    env: docker
+    runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    startCommand: airflow triggerer
     envVars:
       - fromGroup: airflow-common
 
   # One-off job to init DB and create admin user; runs on each deploy
   - type: cron
     name: airflow-init
-    env: docker
+    runtime: docker
     dockerfilePath: ./Dockerfile
-    startCommand: >
-      bash -c "airflow db migrate && airflow users create --username $AIRFLOW_ADMIN_USERNAME --password $AIRFLOW_ADMIN_PASSWORD --firstname Admin --lastname User --role Admin --email $AIRFLOW_ADMIN_EMAIL"
     envVars:
       - fromGroup: airflow-common
-    schedule: manual
+    schedule: "0 0 * * *"
     autoDeploy: false 
