@@ -1,0 +1,18 @@
+# Configuration for the data pipeline
+
+tmdb:
+  base_url: "https://api.themoviedb.org/3"
+  endpoints:
+    discover_movie: "/discover/movie"
+  # Parameters for data fetching
+  # Fetch movies from 2020 to 2024
+  start_year: 2020
+  end_year: 2024
+
+supabase:
+  table_name: "movies"
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

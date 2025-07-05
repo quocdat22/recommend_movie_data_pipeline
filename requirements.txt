@@ -1,0 +1,12 @@
+# Core libraries for the data pipeline
+requests
+python-dotenv
+supabase
+
+# Optional: for data manipulation
+# pandas
+
+# For testing
+pytest
+pytest-mock
+

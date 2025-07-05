@@ -1,0 +1,16 @@
+.git
+.github
+.idea
+.pytest_cache
+.vscode
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.egg-info
+venv
+airflow/venv
+airflow/logs
+airflow/airflow.db
+docker-compose.yml
+README.md 
