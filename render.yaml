@@ -49,10 +49,11 @@ services:
       sizeGB: 1
 
   # Airflow Init Job - Runs once to initialize the database
-  - type: job
+  - type: cron
     name: airflow-init
     env: docker
     plan: free
+    schedule: "0 0 31 2 *"  # February 31st - will never run automatically
     dockerfilePath: ./Dockerfile
     dockerCommand: >
       bash -c "
