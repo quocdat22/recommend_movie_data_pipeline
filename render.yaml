@@ -4,8 +4,13 @@ databases:
     user: airflow
     plan: free
 
-envVarGroups:
-  - name: airflow-common
+services:
+  # Web UI - Chỉ giữ lại service web UI vì đây là dịch vụ quan trọng nhất
+  - type: web
+    name: airflow-webserver
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: AIRFLOW__CORE__EXECUTOR
         value: LocalExecutor
@@ -17,59 +22,9 @@ envVarGroups:
         generateValue: true
       - key: AIRFLOW_ADMIN_EMAIL
         value: admin@example.com
-
-services:
-  # Web UI
-  - type: web
-    name: airflow-webserver
-    runtime: docker
-    plan: free
-    dockerfilePath: ./Dockerfile
-    envVars:
-      - fromGroup: airflow-common
       - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
         fromDatabase:
           name: airflow-postgres
           property: connectionString
     domains:
-      - airflow.onrender.com
-
-  # Scheduler worker
-  - type: worker
-    name: airflow-scheduler
-    runtime: docker
-    plan: free
-    dockerfilePath: ./Dockerfile
-    envVars:
-      - fromGroup: airflow-common
-      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
-        fromDatabase:
-          name: airflow-postgres
-          property: connectionString
-
-  # Triggerer worker
-  - type: worker
-    name: airflow-triggerer
-    runtime: docker
-    plan: free
-    dockerfilePath: ./Dockerfile
-    envVars:
-      - fromGroup: airflow-common
-      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
-        fromDatabase:
-          name: airflow-postgres
-          property: connectionString
-
-  # One-off job to init DB and create admin user; runs on each deploy
-  - type: cron
-    name: airflow-init
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    envVars:
-      - fromGroup: airflow-common
-      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
-        fromDatabase:
-          name: airflow-postgres
-          property: connectionString
-    schedule: "0 0 * * *"
-    autoDeploy: false 
+      - airflow.onrender.com 
