@@ -1,0 +1,73 @@
+databases:
+  - name: airflow-postgres
+    databaseName: airflow
+    user: airflow
+    plan: free
+
+envVarGroups:
+  - name: airflow-common
+    envVars:
+      - key: AIRFLOW__CORE__EXECUTOR
+        value: LocalExecutor
+      - key: AIRFLOW__WEBSERVER__SECRET_KEY
+        generateValue: true
+      # Render automatically injects DATABASE_URL for the postgres instance; reuse it
+      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+        fromDatabase:
+          name: airflow-postgres
+          property: connectionString
+      - key: AIRFLOW_ADMIN_USERNAME
+        value: admin
+      - key: AIRFLOW_ADMIN_PASSWORD
+        generateValue: true
+      - key: AIRFLOW_ADMIN_EMAIL
+        value: admin@example.com
+
+services:
+  # Web UI
+  - type: web
+    name: airflow-webserver
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    startCommand: airflow webserver
+    envVars:
+      - fromGroup: airflow-common
+    domains:
+      - name: airflow.onrender.com
+    disk:
+      name: airflow-logs
+      mountPath: /opt/airflow/logs
+      sizeGB: 1
+
+  # Scheduler worker
+  - type: worker
+    name: airflow-scheduler
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    startCommand: airflow scheduler
+    envVars:
+      - fromGroup: airflow-common
+
+  # Triggerer worker
+  - type: worker
+    name: airflow-triggerer
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    startCommand: airflow triggerer
+    envVars:
+      - fromGroup: airflow-common
+
+  # One-off job to init DB and create admin user; runs on each deploy
+  - type: job
+    name: airflow-init
+    env: docker
+    dockerfilePath: ./Dockerfile
+    startCommand: >
+      bash -c "airflow db migrate && airflow users create --username $AIRFLOW_ADMIN_USERNAME --password $AIRFLOW_ADMIN_PASSWORD --firstname Admin --lastname User --role Admin --email $AIRFLOW_ADMIN_EMAIL"
+    envVars:
+      - fromGroup: airflow-common
+    schedule: manual
+    autoDeploy: false 
