@@ -4,10 +4,6 @@ services:
     name: airflow-postgres
     plan: free
     env: docker
-    disk:
-      name: postgres-data
-      mountPath: /var/lib/postgresql/data
-      sizeGB: 1
     envVars:
       - key: POSTGRES_USER
         value: airflow
@@ -43,17 +39,12 @@ services:
       - key: SUPABASE_KEY
         sync: false
     healthCheckPath: /health
-    disk:
-      name: airflow-logs
-      mountPath: /opt/airflow/logs
-      sizeGB: 1
 
-  # Airflow Init Job - Runs once to initialize the database
-  - type: cron
+  # Airflow Init Job - Runs once to initialize the database (using web service type instead of cron)
+  - type: web
     name: airflow-init
     env: docker
     plan: free
-    schedule: "0 0 31 2 *"  # February 31st - will never run automatically
     dockerfilePath: ./Dockerfile
     dockerCommand: >
       bash -c "
@@ -73,7 +64,9 @@ services:
         --conn-id supabase_default
         --conn-type generic
         --conn-host ${SUPABASE_URL}
-        --conn-password ${SUPABASE_KEY}
+        --conn-password ${SUPABASE_KEY} &&
+      echo 'Initialization complete. You can now shut down this service.' &&
+      sleep infinity
       "
     envVars:
       - key: AIRFLOW__CORE__EXECUTOR
@@ -94,71 +87,3 @@ services:
         sync: false
       - key: SUPABASE_KEY
         sync: false
-
-  # Airflow Scheduler - Responsible for triggering scheduled workflows
-  - type: worker
-    name: airflow-scheduler
-    env: docker
-    plan: free
-    dockerfilePath: ./Dockerfile
-    dockerCommand: airflow scheduler
-    envVars:
-      - key: AIRFLOW__CORE__EXECUTOR
-        value: LocalExecutor
-      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
-        fromService:
-          type: pserv
-          name: airflow-postgres
-          envVarKey: INTERNAL_DATABASE_URL
-          format: postgresql+psycopg2://airflow:${POSTGRES_PASSWORD}@${host}:${port}/airflow
-      - key: AIRFLOW__WEBSERVER__SECRET_KEY
-        fromService:
-          type: web
-          name: airflow-webserver
-          envVarKey: AIRFLOW__WEBSERVER__SECRET_KEY
-      - key: AIRFLOW_UID
-        value: "50000"
-      - key: TMDB_API_KEY
-        sync: false
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_KEY
-        sync: false
-    disk:
-      name: scheduler-logs
-      mountPath: /opt/airflow/logs
-      sizeGB: 1
-
-  # Airflow Triggerer - Handles deferred tasks
-  - type: worker
-    name: airflow-triggerer
-    env: docker
-    plan: free
-    dockerfilePath: ./Dockerfile
-    dockerCommand: airflow triggerer
-    envVars:
-      - key: AIRFLOW__CORE__EXECUTOR
-        value: LocalExecutor
-      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
-        fromService:
-          type: pserv
-          name: airflow-postgres
-          envVarKey: INTERNAL_DATABASE_URL
-          format: postgresql+psycopg2://airflow:${POSTGRES_PASSWORD}@${host}:${port}/airflow
-      - key: AIRFLOW__WEBSERVER__SECRET_KEY
-        fromService:
-          type: web
-          name: airflow-webserver
-          envVarKey: AIRFLOW__WEBSERVER__SECRET_KEY
-      - key: AIRFLOW_UID
-        value: "50000"
-      - key: TMDB_API_KEY
-        sync: false
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_KEY
-        sync: false
-    disk:
-      name: triggerer-logs
-      mountPath: /opt/airflow/logs
-      sizeGB: 1
