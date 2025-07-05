@@ -34,7 +34,7 @@ services:
     envVars:
       - fromGroup: airflow-common
     domains:
-      - name: airflow.onrender.com
+      - airflow.onrender.com
     disk:
       name: airflow-logs
       mountPath: /opt/airflow/logs
