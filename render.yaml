@@ -11,11 +11,6 @@ envVarGroups:
         value: LocalExecutor
       - key: AIRFLOW__WEBSERVER__SECRET_KEY
         generateValue: true
-      # Render automatically injects DATABASE_URL for the postgres instance; reuse it
-      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
-        fromDatabase:
-          name: airflow-postgres
-          property: connectionString
       - key: AIRFLOW_ADMIN_USERNAME
         value: admin
       - key: AIRFLOW_ADMIN_PASSWORD
@@ -32,6 +27,10 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - fromGroup: airflow-common
+      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+        fromDatabase:
+          name: airflow-postgres
+          property: connectionString
     domains:
       - airflow.onrender.com
 
@@ -43,6 +42,10 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - fromGroup: airflow-common
+      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+        fromDatabase:
+          name: airflow-postgres
+          property: connectionString
 
   # Triggerer worker
   - type: worker
@@ -52,6 +55,10 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - fromGroup: airflow-common
+      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+        fromDatabase:
+          name: airflow-postgres
+          property: connectionString
 
   # One-off job to init DB and create admin user; runs on each deploy
   - type: cron
@@ -60,5 +67,9 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - fromGroup: airflow-common
+      - key: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+        fromDatabase:
+          name: airflow-postgres
+          property: connectionString
     schedule: "0 0 * * *"
     autoDeploy: false 
