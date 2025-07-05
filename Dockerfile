@@ -29,5 +29,12 @@ RUN pip install -e .
 COPY src /opt/airflow/src
 COPY airflow/dags /opt/airflow/dags
 
+# Make start script executable
+USER root
+RUN chmod +x /opt/airflow/start.sh
+
 # Switch back to the airflow user
 USER airflow 
+
+# Set the default command to run our start script
+CMD ["/opt/airflow/start.sh"] 

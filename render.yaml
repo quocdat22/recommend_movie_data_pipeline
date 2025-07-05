@@ -11,8 +11,6 @@ services:
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
-    preDeployCommand: airflow db init && airflow users create --username $AIRFLOW_ADMIN_USERNAME --password $AIRFLOW_ADMIN_PASSWORD --firstname Admin --lastname User --role Admin --email $AIRFLOW_ADMIN_EMAIL
-    startCommand: airflow webserver
     envVars:
       - key: AIRFLOW__CORE__EXECUTOR
         value: LocalExecutor
