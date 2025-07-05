@@ -94,8 +94,6 @@ services:
         sync: false
       - key: SUPABASE_KEY
         sync: false
-    dependsOn:
-      - airflow-postgres
 
   # Airflow Scheduler - Responsible for triggering scheduled workflows
   - type: worker
@@ -130,8 +128,6 @@ services:
       name: scheduler-logs
       mountPath: /opt/airflow/logs
       sizeGB: 1
-    dependsOn:
-      - airflow-init
 
   # Airflow Triggerer - Handles deferred tasks
   - type: worker
@@ -166,5 +162,3 @@ services:
       name: triggerer-logs
       mountPath: /opt/airflow/logs
       sizeGB: 1
-    dependsOn:
-      - airflow-init
