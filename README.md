@@ -162,3 +162,41 @@ Navigate to **Admin -> Connections** in the Airflow UI and add the following two
   ```bash
   docker-compose down --volumes
   ```
+
+## GitHub Actions Workflow
+
+This project includes a GitHub Actions workflow that allows you to manually trigger Airflow DAGs remotely. This is especially useful when you've deployed your Airflow instance to a server with public access.
+
+### Setup for GitHub Actions
+
+1. In your GitHub repository, go to **Settings** > **Secrets and variables** > **Actions**
+
+2. Add the following secrets:
+   - `AIRFLOW_USERNAME`: Your Airflow username (default is "admin")
+   - `AIRFLOW_PASSWORD`: Your Airflow password
+   - `TMDB_API_KEY`: Your TMDB API key
+   - `SUPABASE_URL`: Your Supabase URL
+   - `SUPABASE_KEY`: Your Supabase API key
+
+### Triggering a DAG Manually
+
+1. Go to the **Actions** tab in your GitHub repository
+2. Select the "Trigger Airflow DAG" workflow
+3. Click on **Run workflow**
+4. Fill in the required parameters:
+   - **DAG ID**: The ID of the DAG you want to trigger (default: `daily_fetch_popular_movies`)
+   - **Airflow API URL**: The URL where your Airflow API is accessible (e.g., `https://your-airflow-instance.com`)
+   - **Total pages**: Number of pages to fetch from TMDB API (default: 2)
+   - **Optional JSON configuration**: Additional configuration parameters in JSON format
+
+5. Click **Run workflow** to trigger the DAG
+
+### How It Works
+
+The workflow:
+1. Uses the Airflow REST API to trigger a DAG run
+2. Passes configuration parameters to the DAG
+3. Automatically includes your credentials from GitHub Secrets
+4. Provides feedback on the success or failure of the trigger operation
+
+This allows you to run your data pipeline on-demand without needing direct access to the Airflow server.
